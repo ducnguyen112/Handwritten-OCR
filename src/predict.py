@@ -1,5 +1,5 @@
 import cv2
-from configs import *
+import configs
 import numpy as np
 from utils import ctc_decoder
 from model import construct_model
@@ -7,12 +7,13 @@ import os
 from tqdm import tqdm 
 import tensorflow as tf
 
-def predict(model, image_path):
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    image = cv2.resize(image, (WIDTH, HEIGHT))
+def predict(model, image: np.array):
+    # image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    image = cv2.cvtColor(image, cv2.IMREAD_GRAYSCALE)
+    image = cv2.resize(image, (configs.WIDTH, configs.HEIGHT))
     image_pred = np.expand_dims(image, axis=0).astype(np.float32)
     preds = model.predict(image_pred, verbose=0)
-    text = ctc_decoder(preds, VOCAB)
+    text = ctc_decoder(preds, configs.VOCAB)
     return text
 
 
@@ -30,12 +31,12 @@ def make_predict(model, directory):
 
 if __name__ == '__main__':
     # Load model
-    model = construct_model(input_dim=(HEIGHT, WIDTH, 1),
-                            output_dim=len(VOCAB))
+    model = construct_model(input_dim=(configs.HEIGHT, configs.WIDTH, 1),
+                            output_dim=len(configs.VOCAB))
     # model.load_weights('./checkpoint/cp.ckpt')
     model = tf.keras.models.load_model('./model/ocr_model.h5')
 
-    predict_data = make_predict(model, PUBLIC_TEST_DIR)
+    predict_data = make_predict(model, configs.PUBLIC_TEST_DIR)
 
     # Fix empty string
     for i in range(len(predict_data)):

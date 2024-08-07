@@ -1,9 +1,12 @@
 import streamlit as st
 from PIL import Image
 import numpy as np
-from configs import *
+from configs import HEIGHT, WIDTH, VOCAB
+import model
+import predict
+import io
 
-st.set_option('deprecation.showfileUploaderEncoding', False)
+# st.set_option('deprecation.showfileUploaderEncoding', False)
 st.title('AI OCR')
 st.subheader('Nhận dạng chữ viết tay')
 
@@ -16,16 +19,17 @@ if st.button("Chuyển"):
         img = np.array(img)
 
         st.subheader('Hình ảnh được tải lên...')
-        st.image(image_file, width=450)
+        res = st.image(image_file, width=450)
+
         # Load last checkpoint
-        model = train_model(
-            input_dim=(configs.height, configs.width, 1),
-            output_dim=len(configs.vocab),
+        model = model.construct_model(
+            input_dim=(HEIGHT, WIDTH, 1),
+            output_dim=len(VOCAB),
         )
-        model.load_weights('./Checkpoints/cp.ckpt')
+        model.load_weights('./checkpoint/cp.ckpt')
         print(image_file)
         with st.spinner('Đang trích xuất thông tin từ ảnh'):
-            text = predict(model, img)[0]
+            text = predict.predict(model, img)[0]
         st.subheader('Từ đã được trích xuất ...')
         st.write(text)
 
